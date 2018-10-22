@@ -56,10 +56,15 @@ void recordNewHighScore() {
     }
     (void) strcpy(new_entry.died_from, tmp);
 
-    if ((highscore_fp = fopen(config::files::scores.c_str(), "rb+")) == nullptr) {
-        printMessage(("Error opening score file '" + config::files::scores + "'.").c_str());
+    // Do we need to reopen the high score file?  We've dropped the
+    // setgid permissions, so wouldn't be able to open for write.
+    // So we'll guard this with a test on highscore_fp.
+    if (highscore_fp == nullptr) {
+      if ((highscore_fp = fopen(config::files::scores.c_str(), "rb+")) == nullptr) {
+        printMessage(("Error opening score file '" + config::files::scores + "' for record.").c_str());
         printMessage(CNIL);
         return;
+      }
     }
 
     // Search file to find where to insert this character, if uid != 0 and
@@ -172,7 +177,7 @@ void recordNewHighScore() {
 
 void showScoresScreen() {
     if ((highscore_fp = fopen(config::files::scores.c_str(), "rb")) == nullptr) {
-        printMessage(("Error opening score file '" + config::files::scores + "'.").c_str());
+        printMessage(("Error opening score file '" + config::files::scores + "' for read.").c_str());
         printMessage(CNIL);
         return;
     }
