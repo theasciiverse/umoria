@@ -19,7 +19,7 @@ namespace config {
         extern const std::string help_roguelike_wizard;
         extern const std::string death_tomb;
         extern const std::string death_royal;
-        extern const std::string scores;
+        extern std::string scores;
         extern std::string save_game;
     }
 

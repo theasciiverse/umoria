@@ -14,7 +14,7 @@ static const char *usage_instructions = R"(
 Usage:
     umoria [OPTIONS] SAVEGAME
 
-SAVEGAME is an optional save game filename (default: game.sav)
+SAVEGAME is an optional save game filename (default: game.sav in the data folder)
 
 Options:
     -n           Force start of new game
@@ -31,6 +31,11 @@ int main(int argc, char *argv[]) {
     uint32_t seed = 0;
     bool new_game = false;
     bool roguelike_keys = false;
+
+    // the player's files go in the data folder
+    if (!initializeDataFolder()) {
+        return 1;
+    }
 
     // call this routine to grab a file pointer to the high score file
     // and prepare things to relinquish setuid privileges
@@ -98,7 +103,12 @@ int main(int argc, char *argv[]) {
     // Auto-restart of saved file
     if (argv[0] != CNIL) {
         // (void) strcpy(config::files::save_game, argv[0]);
+        // a bare name is a save in the current folder if there is one
+        // there, else in the data folder
         config::files::save_game = argv[0];
+        if (access(argv[0], 0) != 0) {
+            config::files::save_game = dataFilePath(argv[0]);
+        }
     }
 
     startMoria(seed, new_game, roguelike_keys);

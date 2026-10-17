@@ -10,6 +10,90 @@
 // This must be included after fcntl.h, which has a prototype for `open' on some
 // systems.  Otherwise, the `open' prototype conflicts with the `topen' declaration.
 
+// Asciiverse: the player's own files (the score file, saved games and
+// character sheets) live in the player's data folder, umoria/ under
+// $XDG_DATA_HOME (else ~/.local/share), or %APPDATA%\umoria on Windows,
+// so nothing is written to the folder the game is installed in. The game's
+// own read-only files (data/, LICENSE) are still read from the folder it is
+// started in, where av installs them.
+static std::string data_folder;
+
+static bool makeFolder(const std::string &path) {
+    struct stat st {};
+    if (stat(path.c_str(), &st) == 0) {
+        return S_ISDIR(st.st_mode);
+    }
+#ifdef _WIN32
+    return mkdir(path.c_str()) == 0 || errno == EEXIST;
+#else
+    return mkdir(path.c_str(), 0755) == 0 || errno == EEXIST;
+#endif
+}
+
+// make every folder along the path that is not there yet
+static bool makeFolders(const std::string &path) {
+    for (size_t i = 1; i < path.size(); i++) {
+        if (path[i] == '/' || path[i] == '\\') {
+            std::string part = path.substr(0, i);
+            if (part.back() != ':' && !makeFolder(part)) {
+                return false;
+            }
+        }
+    }
+    return makeFolder(path);
+}
+
+// A file name without a folder in it is taken to be in the data folder;
+// any other is used as given.
+std::string dataFilePath(const std::string &name) {
+    if (data_folder.empty() || name.empty() || name.find('/') != std::string::npos
+#ifdef _WIN32
+        || name.find('\\') != std::string::npos || name.find(':') != std::string::npos
+#endif
+        || name[0] == '~') {
+        return name;
+    }
+    return data_folder + "/" + name;
+}
+
+bool initializeDataFolder() {
+    const char *base = nullptr;
+    std::string folder;
+#ifdef _WIN32
+    base = getenv("APPDATA");
+    if (base != nullptr && base[0] != '\0') {
+        folder = std::string(base) + "\\umoria";
+    }
+#else
+    base = getenv("XDG_DATA_HOME");
+    if (base != nullptr && base[0] == '/') {
+        folder = std::string(base) + "/umoria";
+    } else if ((base = getenv("HOME")) != nullptr && base[0] != '\0') {
+        folder = std::string(base) + "/.local/share/umoria";
+    }
+#endif
+    if (folder.empty() || !makeFolders(folder)) {
+        std::cerr << "Can't make the data folder '" << folder << "'\n";
+        return false;
+    }
+    data_folder = folder;
+
+    config::files::scores = dataFilePath("scores.dat");
+    config::files::save_game = dataFilePath("game.sav");
+
+    // the game will not start without a score file: a new one is empty
+    if (access(config::files::scores.c_str(), 0) != 0) {
+        FILE *file = fopen(config::files::scores.c_str(), "wb");
+        if (file == nullptr) {
+            std::cerr << "Can't make the score file '" << config::files::scores << "'\n";
+            return false;
+        }
+        (void) fclose(file);
+    }
+
+    return true;
+}
+
 //  initializeScoreFile
 //  Open the score file while we still have the setuid privileges.  Later
 //  when the score is being written out, you must be sure to flock the file
@@ -140,7 +224,7 @@ void outputRandomLevelObjectsToFile() {
         return;
     }
 
-    FILE *file_ptr = fopen(filename, "w");
+    FILE *file_ptr = fopen(dataFilePath(filename).c_str(), "w");
     if (file_ptr == nullptr) {
         putStringClearToEOL("File could not be opened.", Coord_t{0, 0});
         return;
@@ -357,10 +441,12 @@ static void writeInventoryToFile(FILE *inv_file) {
 }
 
 // Print the character to a file or device -RAK-
-bool outputPlayerCharacterToFile(char *filename) {
+bool outputPlayerCharacterToFile(char *name) {
+    std::string path = dataFilePath(name);
+    const char *filename = path.c_str();
     int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (fd < 0 && errno == EEXIST) {
-        if (getInputConfirmation("Replace existing file " + std::string(filename) + "?")) {
+        if (getInputConfirmation("Replace existing file " + std::string(name) + "?")) {
             fd = open(filename, O_WRONLY, 0644);
         }
     }
@@ -380,7 +466,7 @@ bool outputPlayerCharacterToFile(char *filename) {
             (void) close(fd);
         }
         vtype_t msg = {'\0'};
-        (void) snprintf(msg, MORIA_MESSAGE_SIZE, "Can't open file %s:", filename);
+        (void) snprintf(msg, MORIA_MESSAGE_SIZE, "Can't open file %s:", name);
         printMessage(msg);
         return false;
     }

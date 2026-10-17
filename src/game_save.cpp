@@ -75,7 +75,7 @@ bool saveGame() {
             }
             if (input[0] != 0) {
                 // (void) strcpy(config::files::save_game, input);
-                config::files::save_game = input;
+                config::files::save_game = dataFilePath(input);
             }
         }
         output = "Saving with '" + config::files::save_game + "'...";

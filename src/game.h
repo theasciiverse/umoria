@@ -99,6 +99,8 @@ void pusht(uint8_t treasure_id);
 int itemGetRandomObjectId(int level, bool must_be_small);
 
 // game files
+bool initializeDataFolder();
+std::string dataFilePath(const std::string &name);
 bool initializeScoreFile();
 void displaySplashScreen();
 void displayTextHelpFile(const std::string &filename);

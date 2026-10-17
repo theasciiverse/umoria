@@ -20,7 +20,9 @@ namespace config {
         const std::string help_roguelike_wizard = "data/rl_help_wizard.txt";
         const std::string death_tomb = "data/death_tomb.txt";
         const std::string death_royal = "data/death_royal.txt";
-        const std::string scores = "scores.dat";
+        // Asciiverse: both are set to the player's data folder at start
+        // (initializeDataFolder() in game_files.cpp)
+        std::string scores = "scores.dat";
         std::string save_game = "game.sav";
     } // namespace files
 

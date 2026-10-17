@@ -567,14 +567,22 @@ void getDefaultPlayerName(char *buffer) {
         (void) strcpy(buffer, default_name);
     }
 #else
-    char *p = getlogin();
+    // the environment first, then the login records -Asciiverse-
+    const char *p = getenv("LOGNAME");
+    if (p == nullptr || p[0] == 0) {
+        p = getenv("USER");
+    }
+    if (p == nullptr || p[0] == 0) {
+        p = getlogin();
+    }
 
+    buffer[0] = 0;
     if ((p != nullptr) && (p[0] != 0)) {
-        (void) strcpy(buffer, p);
+        (void) snprintf(buffer, PLAYER_NAME_SIZE, "%s", p);
     } else {
         struct passwd *pwline = getpwuid((int) getuid());
         if (pwline != nullptr) {
-            (void) strcpy(buffer, pwline->pw_name);
+            (void) snprintf(buffer, PLAYER_NAME_SIZE, "%s", pwline->pw_name);
         }
     }
 
