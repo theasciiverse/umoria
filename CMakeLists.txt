@@ -77,6 +77,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 ${cxx_warnings}")
 set(source_dir src)
 set(
         source_files
+        ${source_dir}/centre.h
         ${source_dir}/character.h
         ${source_dir}/config.h
         ${source_dir}/curses.h
@@ -114,6 +115,7 @@ set(
         ${source_dir}/data_stores.cpp
         ${source_dir}/data_tables.cpp
         ${source_dir}/data_treasure.cpp
+        ${source_dir}/centre.cpp
         ${source_dir}/character.cpp
         ${source_dir}/dice.cpp
         ${source_dir}/dungeon.cpp

@@ -25,3 +25,5 @@
   #include <ncurses.h>
 #endif
 
+// Asciiverse: the 80x24 screen centred in the terminal
+#include "centre.h"
