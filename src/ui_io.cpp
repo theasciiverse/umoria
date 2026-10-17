@@ -39,7 +39,10 @@ bool terminalInitialize() {
 
     // Check we have enough screen. -CJS-
     if (LINES < 24 || COLS < 80) {
-        (void) printf("Screen too small for moria.\n");
+        // leave curses first, or the message is lost with the terminal
+        // left in curses' modes -Asciiverse-
+        endwin();
+        (void) printf("Screen too small for moria: it needs 80x24, this terminal is %dx%d.\n", COLS, LINES);
         return false;
     }
 
