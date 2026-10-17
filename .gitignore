@@ -78,3 +78,9 @@ compile_commands.json
 *.zip
 
 .DS_Store
+
+# Asciiverse builds, archives and their staging
+/out/
+/dist/
+/stage/
+/build/
