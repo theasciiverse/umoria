@@ -8,6 +8,8 @@
 #include "headers.h"
 #include "version.h"
 
+#include <csignal>
+
 static bool parseGameSeed(const char *argv, uint32_t &seed);
 
 static const char *usage_instructions = R"(
@@ -31,6 +33,14 @@ int main(int argc, char *argv[]) {
     uint32_t seed = 0;
     bool new_game = false;
     bool roguelike_keys = false;
+
+    // A closed terminal ends the input, and getKeyInput() then saves the
+    // game itself ("end of input: panic saved"). The hangup signal that
+    // comes with it killed the game partway through that save, leaving a
+    // save file it could not restore; ignore it. -Asciiverse-
+#ifdef SIGHUP
+    (void) signal(SIGHUP, SIG_IGN);
+#endif
 
     // the player's files go in the data folder
     if (!initializeDataFolder()) {
