@@ -97,3 +97,9 @@ table, closing the terminal mid-game and restoring, and resizing to
 120x36 and to 79x24. No sanitizer reports. Windows: the MinGW + PDCurses
 build run under Wine 10 (centred at 100x30, a character rolled, saved to
 `%APPDATA%\umoria`). macOS: not built here.
+
+## Ours
+
+- **How to play it, at the top of README.md.** A short note on installing and
+  starting it with av, or from a release archive; the original text follows
+  unchanged.

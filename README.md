@@ -1,3 +1,16 @@
+> **Play it with Asciiverse.** With [av](https://asciiverse.sh), the Asciiverse
+> client:
+>
+> ```
+> av install umoria
+> av play umoria
+> ```
+>
+> Or download the archive for your system from this repository's Releases,
+> unpack it and run `./umoria` (`umoria.exe` on Windows).
+>
+> The original README follows.
+
 # Umoria
 
 _The Dungeons of Moria_ is a single player dungeon simulation originally
